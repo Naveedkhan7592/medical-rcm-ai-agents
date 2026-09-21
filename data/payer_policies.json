@@ -1,0 +1,10 @@
+{
+  "dataset": "synthetic_demo_payer_policies",
+  "policies": [
+    {"payer":"Demo Health Plan A","authorization_required":true,"timely_filing_days":90,"documentation_required":true,"eligibility_required":true},
+    {"payer":"Demo Health Plan B","authorization_required":false,"timely_filing_days":120,"documentation_required":true,"eligibility_required":true},
+    {"payer":"Demo Health Plan C","authorization_required":true,"timely_filing_days":180,"documentation_required":false,"eligibility_required":true},
+    {"payer":"Demo Health Plan D","authorization_required":false,"timely_filing_days":60,"documentation_required":true,"eligibility_required":true},
+    {"payer":"Demo Health Plan E","authorization_required":true,"timely_filing_days":365,"documentation_required":true,"eligibility_required":false}
+  ]
+}

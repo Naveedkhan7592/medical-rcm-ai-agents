@@ -1,0 +1,8 @@
+{
+  "dataset": "SYNTHETIC / DEMO CODING RULES",
+  "note": "These limited rules are for demonstration only and are not comprehensive payer or coding guidance.",
+  "supported_modifiers": ["25", "LT"],
+  "payer_modifier_rules": {
+    "Demo Health Plan C": ["25"]
+  }
+}

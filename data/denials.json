@@ -1,0 +1,25 @@
+{
+  "dataset": "synthetic_demo_data",
+  "records": [
+    {"denial_id":"DEN-001","claim_id":"CLM-004","carc_code":"27","rarc_code":"N30","reason":"Eligibility denial: demo coverage was inactive on the service date.","denied_amount":210.00,"status":"OPEN"},
+    {"denial_id":"DEN-002","claim_id":"CLM-007","carc_code":"197","rarc_code":"N54","reason":"Authorization denial: required demo authorization was not found.","denied_amount":140.00,"status":"OPEN"},
+    {"denial_id":"DEN-003","claim_id":"CLM-010","carc_code":"11","rarc_code":"N56","reason":"Coding denial: demo diagnosis and procedure combination needs correction.","denied_amount":130.00,"status":"OPEN"},
+    {"denial_id":"DEN-004","claim_id":"CLM-013","carc_code":"18","rarc_code":"N111","reason":"Duplicate claim: matching demo service was previously received.","denied_amount":235.00,"status":"CLOSED"},
+    {"denial_id":"DEN-005","claim_id":"CLM-016","carc_code":"29","rarc_code":"N29","reason":"Timely filing denial: demo claim exceeded the payer filing window.","denied_amount":325.00,"status":"OPEN"},
+    {"denial_id":"DEN-006","claim_id":"CLM-019","carc_code":"16","rarc_code":"N265","reason":"Missing documentation: supporting demo records were not attached.","denied_amount":240.00,"status":"OPEN"},
+    {"denial_id":"DEN-007","claim_id":"CLM-022","carc_code":"50","rarc_code":"N386","reason":"Medical necessity denial: demo policy criteria were not met.","denied_amount":155.00,"status":"OPEN"},
+    {"denial_id":"DEN-008","claim_id":"CLM-025","carc_code":"96","rarc_code":"N211","reason":"Payer processing issue: demo payer system could not adjudicate the claim.","denied_amount":225.00,"status":"OPEN"},
+    {"denial_id":"DEN-009","claim_id":"CLM-028","carc_code":"27","rarc_code":"N30","reason":"Eligibility denial: demo coverage record requires verification.","denied_amount":190.00,"status":"OPEN"},
+    {"denial_id":"DEN-010","claim_id":"CLM-031","carc_code":"197","rarc_code":"N54","reason":"Authorization denial: demo referral was not attached.","denied_amount":178.00,"status":"OPEN"},
+    {"denial_id":"DEN-011","claim_id":"CLM-034","carc_code":"11","rarc_code":"N56","reason":"Coding denial: demo modifier requires review.","denied_amount":330.00,"status":"OPEN"},
+    {"denial_id":"DEN-012","claim_id":"CLM-037","carc_code":"18","rarc_code":"N111","reason":"Duplicate claim: demo claim matches an earlier submission.","denied_amount":245.00,"status":"CLOSED"},
+    {"denial_id":"DEN-013","claim_id":"CLM-040","carc_code":"29","rarc_code":"N29","reason":"Timely filing denial: demo filing window was exceeded.","denied_amount":182.00,"status":"OPEN"},
+    {"denial_id":"DEN-014","claim_id":"CLM-043","carc_code":"16","rarc_code":"N265","reason":"Missing documentation: demo clinical attachment was absent.","denied_amount":141.00,"status":"OPEN"},
+    {"denial_id":"DEN-015","claim_id":"CLM-046","carc_code":"50","rarc_code":"N386","reason":"Medical necessity denial: demo service needs additional review.","denied_amount":137.00,"status":"OPEN"},
+    {"denial_id":"DEN-016","claim_id":"CLM-049","carc_code":"96","rarc_code":"N211","reason":"Payer processing issue: demo remittance was incomplete.","denied_amount":131.00,"status":"OPEN"},
+    {"denial_id":"DEN-017","claim_id":"CLM-004","carc_code":"16","rarc_code":"N265","reason":"Missing documentation: demo authorization note was not available.","denied_amount":75.00,"status":"OPEN"},
+    {"denial_id":"DEN-018","claim_id":"CLM-007","carc_code":"11","rarc_code":"N56","reason":"Coding denial: demo procedure code needs validation.","denied_amount":60.00,"status":"OPEN"},
+    {"denial_id":"DEN-019","claim_id":"CLM-022","carc_code":"27","rarc_code":"N30","reason":"Eligibility denial: demo member status needs confirmation.","denied_amount":55.00,"status":"OPEN"},
+    {"denial_id":"DEN-020","claim_id":"CLM-025","carc_code":"197","rarc_code":"N54","reason":"Authorization denial: demo prior approval could not be matched.","denied_amount":80.00,"status":"OPEN"}
+  ]
+}

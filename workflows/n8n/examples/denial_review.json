@@ -1,0 +1,1 @@
+{"task_id":"TASK-DEMO-DENIAL-001","claim_id":"CLM-DEMO-001","task_type":"DENIAL_REVIEW","priority":"HIGH","input_data":{"denial_category":"AUTHORIZATION"},"requested_action":"review_denial"}

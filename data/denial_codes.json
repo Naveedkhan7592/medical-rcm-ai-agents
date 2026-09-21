@@ -1,0 +1,24 @@
+{
+  "dataset": "SYNTHETIC / DEMO DENIAL CODE REFERENCE",
+  "note": "These mappings are fictional demonstration data and are not a complete CARC/RARC reference.",
+  "carc": {
+    "27": {"category":"ELIGIBILITY","description":"Synthetic eligibility denial"},
+    "197": {"category":"AUTHORIZATION","description":"Synthetic authorization denial"},
+    "11": {"category":"CODING","description":"Synthetic coding denial"},
+    "18": {"category":"DUPLICATE","description":"Synthetic duplicate claim denial"},
+    "29": {"category":"TIMELY_FILING","description":"Synthetic timely filing denial"},
+    "16": {"category":"MISSING_DOCUMENTATION","description":"Synthetic documentation denial"},
+    "50": {"category":"MEDICAL_NECESSITY","description":"Synthetic medical necessity denial"},
+    "96": {"category":"PAYER_PROCESSING","description":"Synthetic payer processing denial"}
+  },
+  "rarc": {
+    "N30": {"category":"ELIGIBILITY","description":"Synthetic eligibility detail"},
+    "N54": {"category":"AUTHORIZATION","description":"Synthetic authorization detail"},
+    "N56": {"category":"CODING","description":"Synthetic coding detail"},
+    "N111": {"category":"DUPLICATE","description":"Synthetic duplicate detail"},
+    "N29": {"category":"TIMELY_FILING","description":"Synthetic filing detail"},
+    "N265": {"category":"MISSING_DOCUMENTATION","description":"Synthetic documentation detail"},
+    "N386": {"category":"MEDICAL_NECESSITY","description":"Synthetic necessity detail"},
+    "N211": {"category":"PAYER_PROCESSING","description":"Synthetic processing detail"}
+  }
+}

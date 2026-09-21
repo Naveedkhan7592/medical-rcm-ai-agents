@@ -1,0 +1,25 @@
+{
+  "dataset": "synthetic_demo_data",
+  "records": [
+    {"patient_id":"PAT-001","name":"Demo Patient 001","date_of_birth":"1980-01-15","payer":"Demo Health Plan A","member_id":"DEMO-MBR-001"},
+    {"patient_id":"PAT-002","name":"Demo Patient 002","date_of_birth":"1975-03-22","payer":"Demo Health Plan B","member_id":"DEMO-MBR-002"},
+    {"patient_id":"PAT-003","name":"Demo Patient 003","date_of_birth":"1990-06-10","payer":"Demo Health Plan C","member_id":"DEMO-MBR-003"},
+    {"patient_id":"PAT-004","name":"Demo Patient 004","date_of_birth":"1968-11-04","payer":"Demo Health Plan D","member_id":"DEMO-MBR-004"},
+    {"patient_id":"PAT-005","name":"Demo Patient 005","date_of_birth":"1988-09-17","payer":"Demo Health Plan E","member_id":"DEMO-MBR-005"},
+    {"patient_id":"PAT-006","name":"Demo Patient 006","date_of_birth":"1972-02-28","payer":"Demo Health Plan A","member_id":"DEMO-MBR-006"},
+    {"patient_id":"PAT-007","name":"Demo Patient 007","date_of_birth":"1995-12-08","payer":"Demo Health Plan B","member_id":"DEMO-MBR-007"},
+    {"patient_id":"PAT-008","name":"Demo Patient 008","date_of_birth":"1983-05-19","payer":"Demo Health Plan C","member_id":"DEMO-MBR-008"},
+    {"patient_id":"PAT-009","name":"Demo Patient 009","date_of_birth":"1965-07-25","payer":"Demo Health Plan D","member_id":"DEMO-MBR-009"},
+    {"patient_id":"PAT-010","name":"Demo Patient 010","date_of_birth":"1979-10-30","payer":"Demo Health Plan E","member_id":"DEMO-MBR-010"},
+    {"patient_id":"PAT-011","name":"Demo Patient 011","date_of_birth":"1992-01-06","payer":"Demo Health Plan A","member_id":"DEMO-MBR-011"},
+    {"patient_id":"PAT-012","name":"Demo Patient 012","date_of_birth":"1986-04-14","payer":"Demo Health Plan B","member_id":"DEMO-MBR-012"},
+    {"patient_id":"PAT-013","name":"Demo Patient 013","date_of_birth":"1970-08-21","payer":"Demo Health Plan C","member_id":"DEMO-MBR-013"},
+    {"patient_id":"PAT-014","name":"Demo Patient 014","date_of_birth":"1998-02-12","payer":"Demo Health Plan D","member_id":"DEMO-MBR-014"},
+    {"patient_id":"PAT-015","name":"Demo Patient 015","date_of_birth":"1981-06-27","payer":"Demo Health Plan E","member_id":"DEMO-MBR-015"},
+    {"patient_id":"PAT-016","name":"Demo Patient 016","date_of_birth":"1962-09-03","payer":"Demo Health Plan A","member_id":"DEMO-MBR-016"},
+    {"patient_id":"PAT-017","name":"Demo Patient 017","date_of_birth":"1993-11-16","payer":"Demo Health Plan B","member_id":"DEMO-MBR-017"},
+    {"patient_id":"PAT-018","name":"Demo Patient 018","date_of_birth":"1977-12-24","payer":"Demo Health Plan C","member_id":"DEMO-MBR-018"},
+    {"patient_id":"PAT-019","name":"Demo Patient 019","date_of_birth":"1989-03-09","payer":"Demo Health Plan D","member_id":"DEMO-MBR-019"},
+    {"patient_id":"PAT-020","name":"Demo Patient 020","date_of_birth":"1969-05-31","payer":"Demo Health Plan E","member_id":"DEMO-MBR-020"}
+  ]
+}

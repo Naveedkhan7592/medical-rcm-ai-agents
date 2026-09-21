@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: medical-rcm-postgres
+    environment:
+      POSTGRES_DB: rcm_db
+      POSTGRES_USER: rcm_user
+      POSTGRES_PASSWORD: rcm_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - rcm_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  rcm_postgres_data:

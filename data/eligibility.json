@@ -1,0 +1,25 @@
+{
+  "dataset": "synthetic_demo_eligibility",
+  "records": [
+    {"patient_id":"PAT-001","payer":"Demo Health Plan A","member_id":"DEMO-MBR-001","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-002","payer":"Demo Health Plan B","member_id":"DEMO-MBR-002","eligible":false,"coverage_start":null,"coverage_end":null,"source":"synthetic_demo"},
+    {"patient_id":"PAT-003","payer":"Demo Health Plan C","member_id":"DEMO-MBR-003","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-004","payer":"Demo Health Plan D","member_id":"DEMO-MBR-004","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-06-30","source":"synthetic_demo"},
+    {"patient_id":"PAT-005","payer":"Demo Health Plan E","member_id":"DEMO-MBR-005","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-006","payer":"Demo Health Plan A","member_id":"DEMO-MBR-006","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-007","payer":"Demo Health Plan B","member_id":"DEMO-MBR-007","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-008","payer":"Demo Health Plan C","member_id":"DEMO-MBR-008","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-009","payer":"Demo Health Plan D","member_id":"DEMO-MBR-009","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-010","payer":"Demo Health Plan E","member_id":"DEMO-MBR-010","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-011","payer":"Demo Health Plan A","member_id":"DEMO-MBR-011","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-012","payer":"Demo Health Plan B","member_id":"DEMO-MBR-012","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-013","payer":"Demo Health Plan C","member_id":"DEMO-MBR-013","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-014","payer":"Demo Health Plan D","member_id":"DEMO-MBR-014","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-015","payer":"Demo Health Plan E","member_id":"DEMO-MBR-015","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-016","payer":"Demo Health Plan A","member_id":"DEMO-MBR-016","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-017","payer":"Demo Health Plan B","member_id":"DEMO-MBR-017","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-018","payer":"Demo Health Plan C","member_id":"DEMO-MBR-018","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-019","payer":"Demo Health Plan D","member_id":"DEMO-MBR-019","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"},
+    {"patient_id":"PAT-020","payer":"Demo Health Plan E","member_id":"DEMO-MBR-020","eligible":true,"coverage_start":"2026-01-01","coverage_end":"2026-12-31","source":"synthetic_demo"}
+  ]
+}

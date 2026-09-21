@@ -1,0 +1,5 @@
+{
+  "dataset": "SYNTHETIC / DEMO CPT REFERENCE",
+  "note": "This small reference is not complete and is not suitable for real medical billing.",
+  "codes": ["99213", "99214", "97110", "20610"]
+}

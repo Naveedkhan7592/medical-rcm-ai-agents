@@ -1,0 +1,10 @@
+{
+  "dataset": "SYNTHETIC / DEMO A/R PRIORITY POLICY",
+  "note": "These thresholds are portfolio demonstration settings, not industry standards or payer policy.",
+  "critical_age_days": 366,
+  "critical_balance": "1000.00",
+  "high_age_days": 181,
+  "high_balance": "500.00",
+  "medium_age_days": 61,
+  "medium_balance": "100.00"
+}
