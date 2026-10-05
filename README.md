@@ -217,7 +217,7 @@ Python, FastAPI, Pydantic/Pydantic Settings, SQLAlchemy, SQLite by default (opti
 All records, code references, and payer policies are synthetic and incomplete. The project does not establish clinical correctness, coding advice, payer compliance, HIPAA compliance, or production readiness. It has no production authentication, real payer/eClinicalWorks/clearinghouse integration, external action execution, or production monitoring. A production system would require validated authoritative sources, privacy/security and access controls, qualified human workflows, integration testing, operational controls, and a separate compliance review.
 
 No `LICENSE` file is present. The repository owner should choose a license before public release. See [docs/portfolio_talking_points.md](docs/portfolio_talking_points.md), [docs/demo_guide.md](docs/demo_guide.md), [docs/release_checklist.md](docs/release_checklist.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md).
-# Medical RCM AI Agents Demo
+# AI-Powered Medical Billing RCM Multi-Agent System
 
 A Python/FastAPI multi-agent revenue-cycle-management demo using synthetic data only. Python specialist agents and the RCM Supervisor remain authoritative for business decisions. n8n exports demonstrate orchestration contracts; the Streamlit dashboard presents synthetic operations and evaluation results.
 
