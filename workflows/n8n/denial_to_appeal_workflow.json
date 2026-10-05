@@ -1,14 +1,199 @@
 {
   "name": "Denial to Appeal Human Review",
   "nodes": [
-    {"parameters":{"httpMethod":"POST","path":"denial-to-appeal","responseMode":"responseNode","options":{}},"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[-900,0]},
-    {"parameters":{"jsCode":"const body = $json.body ?? $json;\nif (!body.task_id || !body.claim_id || body.task_type !== 'DENIAL_REVIEW') return [{json:{status:'ERROR',error_type:'INVALID_INPUT',message:'task_id, claim_id, and DENIAL_REVIEW are required',task_id:body.task_id??null,claim_id:body.claim_id??null}}];\nreturn [{json:{...body, task_type:'DENIAL_REVIEW'}}];"},"id":"validate","name":"Validate Denial Task","type":"n8n-nodes-base.code","typeVersion":2,"position":[-680,0]},
-    {"parameters":{"method":"POST","url":"={{($env.RCM_API_BASE_URL || 'http://localhost:8000') + '/rcm/supervisor'}}","sendBody":true,"specifyBody":"json","jsonBody":"={{$json}}","options":{"timeout":30000},"response":{"response":{"neverError":true}}},"id":"supervisor","name":"Call Supervisor","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[-440,0],"onError":"continueRegularOutput"},
-    {"parameters":{"jsCode":"const result = $json.body ?? $json;\nconst appealReady = result.status === 'COMPLETED' && result.next_action !== 'HUMAN_REVIEW' && result.human_review_required === false;\nreturn [{json:{...result, appeal_route: appealReady ? 'PREPARE_FOR_HUMAN_REVIEW' : 'HUMAN_REVIEW_OR_MISSING_EVIDENCE', external_submission_allowed:false}}];"},"id":"decision","name":"Appeal Readiness Decision","type":"n8n-nodes-base.code","typeVersion":2,"position":[-180,0]},
-    {"parameters":{"rules":{"values":[{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.appeal_route}}","rightValue":"PREPARE_FOR_HUMAN_REVIEW","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"PREPARE_FOR_HUMAN_REVIEW"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.appeal_route}}","rightValue":"HUMAN_REVIEW_OR_MISSING_EVIDENCE","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"HUMAN_REVIEW"}]},"options":{}},"id":"route","name":"Route to Human Review","type":"n8n-nodes-base.switch","typeVersion":3.2,"position":[80,0]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"prepare","name":"Prepare Human Appeal Review","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[340,-80]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"human","name":"Human Review Required","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[340,100]}
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "denial-to-appeal",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-900, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nif (!body.task_id || !body.claim_id || String(body.task_type ?? '').toUpperCase() !== 'DENIAL_REVIEW') {\n  return [{ json: { status: 'ERROR', error_type: 'INVALID_INPUT', message: 'task_id, claim_id, and DENIAL_REVIEW are required', task_id: body.task_id ?? null, claim_id: body.claim_id ?? null } }];\n}\nreturn [{ json: { ...body, task_type: 'DENIAL_REVIEW' } }];"
+      },
+      "id": "validate",
+      "name": "Validate Denial Task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{($env.RCM_API_BASE_URL || 'http://localhost:8000') + '/rcm/supervisor'}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {
+          "timeout": 30000
+        },
+        "response": {
+          "response": {
+            "neverError": true
+          }
+        }
+      },
+      "id": "supervisor",
+      "name": "Call Supervisor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-440, 0],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json.body ?? $json;\nconst required = ['task_id','claim_id','status','next_action','human_review_required'];\nconst missing = required.filter((key) => result[key] === undefined || result[key] === null);\nif (missing.length) {\n  return [{ json: { status: 'ERROR', error_type: 'MALFORMED_SUPERVISOR_RESPONSE', message: `Missing response field(s): ${missing.join(', ')}`, task_id: result.task_id ?? null, claim_id: result.claim_id ?? null } }];\n}\nconst appealRoute = result.human_review_required === true || String(result.status ?? '').toUpperCase() === 'REVIEW' || String(result.status ?? '').toUpperCase() === 'WAITING'\n  ? 'HUMAN_REVIEW'\n  : (String(result.status ?? '').toUpperCase() === 'COMPLETED' && String(result.next_action ?? '').toUpperCase() !== 'HUMAN_REVIEW' ? 'PREPARE_FOR_HUMAN_REVIEW' : 'HUMAN_REVIEW');\nreturn [{ json: { ...result, appeal_route: appealRoute, external_submission_allowed: false, human_review_required: Boolean(result.human_review_required) } }];"
+      },
+      "id": "decision",
+      "name": "Appeal Readiness Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-180, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.appeal_route}}",
+                    "rightValue": "PREPARE_FOR_HUMAN_REVIEW",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "PREPARE_FOR_HUMAN_REVIEW"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.appeal_route}}",
+                    "rightValue": "HUMAN_REVIEW",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "HUMAN_REVIEW"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "ERROR",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ERROR"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route",
+      "name": "Route to Human Review",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [80, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "prepare",
+      "name": "Prepare Human Appeal Review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [340, -80]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "human",
+      "name": "Human Review Required",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [340, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [340, 220]
+    }
   ],
-  "connections":{"Webhook":{"main":[[{"node":"Validate Denial Task","type":"main","index":0}]]},"Validate Denial Task":{"main":[[{"node":"Call Supervisor","type":"main","index":0}]]},"Call Supervisor":{"main":[[{"node":"Appeal Readiness Decision","type":"main","index":0}]]},"Appeal Readiness Decision":{"main":[[{"node":"Route to Human Review","type":"main","index":0}]]},"Route to Human Review":{"main":[[{"node":"Prepare Human Appeal Review","type":"main","index":0}],[{"node":"Human Review Required","type":"main","index":0}]]}},
-  "active":false,"settings":{"executionOrder":"v1"},"versionId":"synthetic-step-15-denial","meta":{"templateCredsSetupCompleted":true},"tags":[]
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Validate Denial Task", "type": "main", "index": 0 }]]
+    },
+    "Validate Denial Task": {
+      "main": [[{ "node": "Call Supervisor", "type": "main", "index": 0 }]]
+    },
+    "Call Supervisor": {
+      "main": [[{ "node": "Appeal Readiness Decision", "type": "main", "index": 0 }]]
+    },
+    "Appeal Readiness Decision": {
+      "main": [[{ "node": "Route to Human Review", "type": "main", "index": 0 }]]
+    },
+    "Route to Human Review": {
+      "main": [
+        [{ "node": "Prepare Human Appeal Review", "type": "main", "index": 0 }],
+        [{ "node": "Human Review Required", "type": "main", "index": 0 }],
+        [{ "node": "Error Handler", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "synthetic-step-16-denial",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
 }
+

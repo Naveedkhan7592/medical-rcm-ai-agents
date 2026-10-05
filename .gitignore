@@ -11,3 +11,5 @@ env/
 .coverage
 htmlcov/
 .vscode/
+.streamlit/secrets.toml
+rcm_demo.db

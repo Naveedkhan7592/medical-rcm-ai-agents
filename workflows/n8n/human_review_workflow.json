@@ -1,12 +1,98 @@
 {
   "name": "RCM Human Review Gate",
   "nodes": [
-    {"parameters":{"httpMethod":"POST","path":"rcm-human-review","responseMode":"responseNode","options":{}},"id":"webhook","name":"Human Review Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[-900,0]},
-    {"parameters":{"jsCode":"const body = $json.body ?? $json;\nif (!body.task_id || !body.claim_id) return [{json:{status:'ERROR',error_type:'INVALID_INPUT',message:'task_id and claim_id are required'}}];\nreturn [{json:{task_id:body.task_id,claim_id:body.claim_id,review_status:'PENDING',human_review_required:true,allowed_decisions:['APPROVE','REJECT','REQUEST_MORE_INFORMATION'],external_actions_allowed:false,context:body}}];"},"id":"create","name":"Create Review Task","type":"n8n-nodes-base.code","typeVersion":2,"position":[-640,0]},
-    {"parameters":{"amount":1,"unit":"minutes"},"id":"wait","name":"Wait for Human Decision","type":"n8n-nodes-base.wait","typeVersion":1.1,"position":[-380,0]},
-    {"parameters":{"jsCode":"const decision = $json.human_decision;\nif (!['APPROVE','REJECT','REQUEST_MORE_INFORMATION'].includes(decision)) return [{json:{...$json,status:'WAITING',error_type:'HUMAN_DECISION_REQUIRED',message:'A human decision is required; no automatic approval is permitted.'}}];\nreturn [{json:{...$json,status:'HUMAN_DECISION_RECORDED',decision,external_actions_allowed:false}}];"},"id":"decision","name":"Record Human Decision","type":"n8n-nodes-base.code","typeVersion":2,"position":[-120,0]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"response","name":"Return Review State","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[140,0]}
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rcm-human-review",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Human Review Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-900, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nif (!body.task_id || !body.claim_id) {\n  return [{ json: { status: 'ERROR', error_type: 'INVALID_INPUT', message: 'task_id and claim_id are required' } }];\n}\nreturn [{ json: { task_id: body.task_id, claim_id: body.claim_id, review_status: 'PENDING', human_review_required: true, allowed_decisions: ['APPROVE','REJECT','REQUEST_MORE_INFORMATION'], external_actions_allowed:false, approved_internal_demo_only:false, context: body } }];"
+      },
+      "id": "validate",
+      "name": "Validate Review Task",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-700, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nreturn [{ json: { task_id: body.task_id, claim_id: body.claim_id, review_status: 'PENDING', human_review_required: true, allowed_decisions: ['APPROVE','REJECT','REQUEST_MORE_INFORMATION'], external_actions_allowed:false, approved_internal_demo_only:false, context: body } }];"
+      },
+      "id": "create",
+      "name": "Create Review State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-430, 0]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "id": "wait",
+      "name": "Wait for Human Decision",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [-180, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const decision = $json.human_decision;\nif (!['APPROVE','REJECT','REQUEST_MORE_INFORMATION'].includes(decision)) {\n  return [{ json: { ...$json, status: 'WAITING', error_type: 'HUMAN_DECISION_REQUIRED', message: 'A human decision is required; no automatic approval is permitted.', external_actions_allowed:false } }];\n}\nconst isApproval = decision === 'APPROVE';\nreturn [{ json: { ...$json, status: 'HUMAN_DECISION_RECORDED', decision, external_actions_allowed:false, approved_internal_demo_only:isApproval, human_review_required: true } }];"
+      },
+      "id": "decision",
+      "name": "Record Human Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "response",
+      "name": "Return Review State",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [340, 0]
+    }
   ],
-  "connections":{"Human Review Webhook":{"main":[[{"node":"Create Review Task","type":"main","index":0}]]},"Create Review Task":{"main":[[{"node":"Wait for Human Decision","type":"main","index":0}]]},"Wait for Human Decision":{"main":[[{"node":"Record Human Decision","type":"main","index":0}]]},"Record Human Decision":{"main":[[{"node":"Return Review State","type":"main","index":0}]]}},
-  "active":false,"settings":{"executionOrder":"v1"},"versionId":"synthetic-step-15-human","meta":{"templateCredsSetupCompleted":true},"tags":[]
+  "connections": {
+    "Human Review Webhook": {
+      "main": [[{ "node": "Validate Review Task", "type": "main", "index": 0 }]]
+    },
+    "Validate Review Task": {
+      "main": [[{ "node": "Create Review State", "type": "main", "index": 0 }]]
+    },
+    "Create Review State": {
+      "main": [[{ "node": "Wait for Human Decision", "type": "main", "index": 0 }]]
+    },
+    "Wait for Human Decision": {
+      "main": [[{ "node": "Record Human Decision", "type": "main", "index": 0 }]]
+    },
+    "Record Human Decision": {
+      "main": [[{ "node": "Return Review State", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "synthetic-step-16-human",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
 }
+

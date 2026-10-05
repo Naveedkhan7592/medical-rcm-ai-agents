@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: rcm_db
       POSTGRES_USER: rcm_user
-      POSTGRES_PASSWORD: rcm_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local environment}
     ports:
       - "5432:5432"
     volumes:

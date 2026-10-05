@@ -9,7 +9,14 @@ from app.schemas import ARAgentResult, AppealResult, BillingQAResult, ClaimsAgen
 from app.services.database import get_db
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Medical RCM AI Agents Synthetic Demo API",
+    description=(
+        "Synthetic/demo system using no real patient data. "
+        "Python agents provide deterministic RCM decisions; no autonomous payer actions are performed."
+    ),
+    version="0.1.0",
+)
 
 
 @app.get("/health")
@@ -17,6 +24,15 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "medical-rcm-ai",
+    }
+
+
+@app.get("/ready")
+def readiness() -> dict[str, str]:
+    return {
+        "status": "ready",
+        "service": "medical-rcm-ai",
+        "mode": "synthetic-demo",
     }
 
 

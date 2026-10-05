@@ -62,6 +62,18 @@ def test_health_endpoint_is_available() -> None:
     assert response.json()["service"] == "medical-rcm-ai"
 
 
+def test_ready_endpoint_does_not_claim_database_connectivity() -> None:
+    with TestClient(app) as test_client:
+        response = test_client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ready",
+        "service": "medical-rcm-ai",
+        "mode": "synthetic-demo",
+    }
+
+
 def test_supervisor_http_contract_preserves_task_identity() -> None:
     with client() as test_client:
         response = test_client.post(

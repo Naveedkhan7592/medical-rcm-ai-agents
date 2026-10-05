@@ -1,26 +1,263 @@
 {
   "name": "RCM Supervisor Orchestration",
   "nodes": [
-    {"parameters":{"httpMethod":"POST","path":"rcm-supervisor","responseMode":"responseNode","options":{}},"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[-900,0]},
-    {"parameters":{"jsCode":"const body = $json.body ?? $json;\nconst allowed = ['CLAIM_REVIEW','DENIAL_REVIEW','PAYMENT_REVIEW','AR_REVIEW','BILLING_QA','APPEAL_REVIEW','FULL_RCM_REVIEW'];\nconst required = ['task_id','claim_id','task_type','priority','input_data','requested_action'];\nconst missing = required.filter((key) => body[key] === undefined || body[key] === null || body[key] === '');\nconst invalidType = body.task_type && !allowed.includes(body.task_type);\nif (missing.length || invalidType) {\n  return [{ json: { status: 'ERROR', error_type: 'INVALID_INPUT', message: invalidType ? 'Unsupported task type' : `Missing required field(s): ${missing.join(', ')}`, task_id: body.task_id ?? null, claim_id: body.claim_id ?? null } }];\n}\nreturn [{ json: { task_id: body.task_id, claim_id: body.claim_id, task_type: body.task_type, priority: body.priority, input_data: body.input_data, requested_action: body.requested_action } }];"},"id":"validate","name":"Validate Input","type":"n8n-nodes-base.code","typeVersion":2,"position":[-680,0]},
-    {"parameters":{"method":"POST","url":"={{($env.RCM_API_BASE_URL || 'http://localhost:8000') + '/rcm/supervisor'}}","sendBody":true,"specifyBody":"json","jsonBody":"={{$json}}","options":{"timeout":30000},"response":{"response":{"neverError":true}}},"id":"supervisor-api","name":"Call Python Supervisor","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[-420,0],"onError":"continueRegularOutput"},
-    {"parameters":{"jsCode":"const response = $json.body ?? $json;\nconst required = ['task_id','claim_id','status','workflow_stage','next_action'];\nconst missing = required.filter((key) => response[key] === undefined || response[key] === null);\nif (missing.length) return [{ json: { status: 'ERROR', error_type: 'MALFORMED_SUPERVISOR_RESPONSE', message: `Missing response field(s): ${missing.join(', ')}`, task_id: response.task_id ?? null, claim_id: response.claim_id ?? null } }];\nreturn [{ json: { task_id: response.task_id, claim_id: response.claim_id, status: response.status, workflow_stage: response.workflow_stage, next_action: response.next_action, human_review_required: Boolean(response.human_review_required), priority: response.priority ?? 'MEDIUM', risk_score: response.risk_score ?? 0, completed_agents: response.completed_agents ?? [], pending_agents: response.pending_agents ?? [], failed_agents: response.failed_agents ?? [], missing_information: response.missing_information ?? [], warnings: response.warnings ?? [], specialist_results: response.specialist_results ?? {} } }];"},"id":"normalize","name":"Normalize Supervisor Response","type":"n8n-nodes-base.code","typeVersion":2,"position":[-160,0]},
-    {"parameters":{"rules":{"values":[{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.status}}","rightValue":"COMPLETED","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"COMPLETED"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.status}}","rightValue":"WAITING","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"WAITING"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.status}}","rightValue":"REVIEW","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"REVIEW"},{"conditions":{"options":{"caseSensitive":true,"leftValue":"","typeValidation":"strict","version":2},"conditions":[{"leftValue":"={{$json.status}}","rightValue":"ERROR","operator":{"type":"string","operation":"equals"}}]},"renameOutput":true,"outputKey":"ERROR"}]},"options":{}},"id":"route","name":"Route Supervisor Status","type":"n8n-nodes-base.switch","typeVersion":3.2,"position":[100,0]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"success","name":"Success","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[360,-180]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"waiting","name":"Waiting - Missing Information","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[360,-40]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"review","name":"Human Review","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[360,100]},
-    {"parameters":{"respondWith":"json","responseBody":"={{$json}}","options":{}},"id":"error","name":"Error Handler","type":"n8n-nodes-base.respondToWebhook","typeVersion":1.4,"position":[360,240]}
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rcm-supervisor",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-900, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst allowed = ['CLAIM_REVIEW','DENIAL_REVIEW','PAYMENT_REVIEW','AR_REVIEW','BILLING_QA','APPEAL_REVIEW','FULL_RCM_REVIEW'];\nconst required = ['task_id','claim_id','task_type','priority','input_data','requested_action'];\nconst missing = required.filter((key) => body[key] === undefined || body[key] === null || body[key] === '');\nconst invalidType = body.task_type && !allowed.includes(String(body.task_type).toUpperCase());\nif (missing.length || invalidType) {\n  return [{ json: { status: 'ERROR', error_type: 'INVALID_INPUT', message: invalidType ? 'Unsupported task type' : `Missing required field(s): ${missing.join(', ')}`, task_id: body.task_id ?? null, claim_id: body.claim_id ?? null } }];\n}\nreturn [{ json: { task_id: body.task_id, claim_id: body.claim_id, task_type: String(body.task_type).toUpperCase(), priority: body.priority ?? 'MEDIUM', input_data: body.input_data ?? {}, requested_action: body.requested_action } }];"
+      },
+      "id": "validate",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{($env.RCM_API_BASE_URL || 'http://localhost:8000') + '/rcm/supervisor'}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {
+          "timeout": 30000
+        },
+        "response": {
+          "response": {
+            "neverError": true
+          }
+        }
+      },
+      "id": "supervisor-api",
+      "name": "Call Python Supervisor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-420, 0],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json.body ?? $json;\nconst required = ['task_id','claim_id','status','next_action','human_review_required'];\nconst missing = required.filter((key) => response[key] === undefined || response[key] === null);\nif (missing.length) {\n  return [{ json: { status: 'ERROR', error_type: 'MALFORMED_SUPERVISOR_RESPONSE', message: `Missing response field(s): ${missing.join(', ')}`, task_id: response.task_id ?? null, claim_id: response.claim_id ?? null } }];\n}\nconst normalizedStatus = String(response.status ?? '').toUpperCase();\nreturn [{ json: { task_id: response.task_id, claim_id: response.claim_id, status: normalizedStatus, workflow_stage: response.workflow_stage ?? response.current_stage ?? 'SUPERVISOR', next_action: response.next_action, human_review_required: response.human_review_required === true || response.human_review_required === 'true', priority: response.priority ?? 'MEDIUM', risk_score: response.risk_score ?? 0, completed_agents: response.completed_agents ?? [], pending_agents: response.pending_agents ?? [], failed_agents: response.failed_agents ?? [], missing_information: response.missing_information ?? [], warnings: response.warnings ?? [], specialist_results: response.specialist_results ?? response.agent_results ?? {}, agent_results: response.agent_results ?? {}, audit_reference: response.audit_reference ?? null } }];"
+      },
+      "id": "normalize",
+      "name": "Normalize Supervisor Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "COMPLETED",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "COMPLETED"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "WAITING",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "WAITING"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "REVIEW",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "REVIEW"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "IN_PROGRESS",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "IN_PROGRESS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.status}}",
+                    "rightValue": "ERROR",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ERROR"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route",
+      "name": "Route Supervisor Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [100, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "success",
+      "name": "Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [360, -180]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "waiting",
+      "name": "Waiting - Missing Information",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [360, -40]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "in-progress",
+      "name": "In Progress",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [360, 100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "review",
+      "name": "Human Review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [360, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "error",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [360, 340]
+    }
   ],
   "connections": {
-    "Webhook":{"main":[[{"node":"Validate Input","type":"main","index":0}]]},
-    "Validate Input":{"main":[[{"node":"Call Python Supervisor","type":"main","index":0}]]},
-    "Call Python Supervisor":{"main":[[{"node":"Normalize Supervisor Response","type":"main","index":0}]]},
-    "Normalize Supervisor Response":{"main":[[{"node":"Route Supervisor Status","type":"main","index":0}]]},
-    "Route Supervisor Status":{"main":[[{"node":"Success","type":"main","index":0}],[{"node":"Waiting - Missing Information","type":"main","index":0}],[{"node":"Human Review","type":"main","index":0}],[{"node":"Error Handler","type":"main","index":0}]]}
+    "Webhook": {
+      "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]]
+    },
+    "Validate Input": {
+      "main": [[{ "node": "Call Python Supervisor", "type": "main", "index": 0 }]]
+    },
+    "Call Python Supervisor": {
+      "main": [[{ "node": "Normalize Supervisor Response", "type": "main", "index": 0 }]]
+    },
+    "Normalize Supervisor Response": {
+      "main": [[{ "node": "Route Supervisor Status", "type": "main", "index": 0 }]]
+    },
+    "Route Supervisor Status": {
+      "main": [
+        [{ "node": "Success", "type": "main", "index": 0 }],
+        [{ "node": "Waiting - Missing Information", "type": "main", "index": 0 }],
+        [{ "node": "Human Review", "type": "main", "index": 0 }],
+        [{ "node": "In Progress", "type": "main", "index": 0 }],
+        [{ "node": "Error Handler", "type": "main", "index": 0 }]
+      ]
+    }
   },
   "active": false,
-  "settings":{"executionOrder":"v1"},
-  "versionId":"synthetic-step-15",
-  "meta":{"templateCredsSetupCompleted":true},
-  "tags":[]
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "synthetic-step-16",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
 }
+
