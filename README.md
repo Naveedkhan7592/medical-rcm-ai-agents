@@ -283,3 +283,28 @@ python scripts/validate_n8n_workflows.py
 ```
 
 The dashboard includes the Agent Evaluation page. See [docs/evaluation.md](docs/evaluation.md) and [docs/deployment_readiness.md](docs/deployment_readiness.md) for evaluation and CI details.
+## Dashboard Preview
+
+The Streamlit operations dashboard provides a visual interface for exploring the synthetic RCM workflow, human-review cases, demo scenarios, and agent evaluation results.
+
+### Executive Overview
+
+![Executive Overview](docs/images/executive-overview.png)
+
+### Denial Management
+
+![Denial Management](docs/images/denial-management.png)
+
+### Human Review Queue
+
+![Human Review Queue](docs/images/human-review.png)
+
+### End-to-End Demo Scenarios
+
+![Demo Scenarios](docs/images/demo-scenarios.png)
+
+### Agent Evaluation
+
+![Agent Evaluation](docs/images/agent-evaluation.png)
+
+> **Demo notice:** All dashboard data is synthetic. The project does not perform real claim submission, payment posting, appeal submission, or external payer actions.
