@@ -86,7 +86,13 @@ Run the dashboard with:
 python -m streamlit run dashboard/streamlit_app.py
 ```
 
-Current pages: Executive Overview, Claims, Denials, Payments, A/R, Human Review, Demo Scenarios, and Agent Evaluation. The UI reads the synthetic repository dataset and evaluation results; it does not execute external billing actions. Screenshot guidance is in [docs/images/README.md](docs/images/README.md); no screenshots are included yet.
+Current pages: Executive Overview, Claims, Denials, Payments, A/R, Human Review, Patient RCM Workflow, Demo Scenarios, and Agent Evaluation. The UI reads the synthetic repository dataset and evaluation results; it does not execute external billing actions. Screenshot guidance is in [docs/images/README.md](docs/images/README.md); no screenshots are included yet.
+
+## Interactive Patient RCM Workflow
+
+The dashboard includes a synthetic patient-to-RCM workflow simulator for creating a demo patient and claim, running the existing Python RCM stack, and reviewing route selection, risk, billing QA, and human-review requirements without external submission.
+
+Documentation: [docs/patient_rcm_workflow.md](docs/patient_rcm_workflow.md)
 
 ## Demo Scenarios
 

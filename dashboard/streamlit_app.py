@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
@@ -7,6 +8,11 @@ import pandas as pd
 import streamlit as st
 
 from app.services.demo_scenarios import run_demo_scenario
+from app.services.patient_rcm_workflow import (
+    make_synthetic_claim,
+    make_synthetic_patient,
+    run_patient_rcm_workflow,
+)
 from dashboard.components import ar_table, claims_table, denials_table, format_currency, metric_card, payments_table
 from dashboard.data_service import load_dashboard_data, load_demo_scenarios, load_evaluation_summary
 from dashboard.metrics import compute_overview_metrics
@@ -89,9 +95,27 @@ def _human_review_queue(denials: list[dict]) -> list[dict]:
     return queue[:10]
 
 
+def _default_patient() -> dict:
+    return make_synthetic_patient()
+
+
+def _default_claim(patient_id: str | None = None) -> dict:
+    patient_key = patient_id or "DEMO-P-101"
+    return make_synthetic_claim(patient_id=patient_key, claim_id="DEMO-CLM-101")
+
+
 with st.sidebar:
     st.title("RCM Portfolio")
-    page = st.radio("Navigation", ["Executive Overview", "Claims", "Denials", "Payments", "A/R", "Human Review", "Demo Scenarios", "Agent Evaluation"])
+    page = st.radio("Navigation", ["Executive Overview", "Claims", "Denials", "Payments", "A/R", "Human Review", "Patient RCM Workflow", "Demo Scenarios", "Agent Evaluation"])
+
+if "synthetic_patient" not in st.session_state:
+    st.session_state.synthetic_patient = _default_patient()
+if "synthetic_claim" not in st.session_state:
+    st.session_state.synthetic_claim = _default_claim(st.session_state.synthetic_patient["patient_id"])
+if "workflow_result" not in st.session_state:
+    st.session_state.workflow_result = None
+if "human_review_decision" not in st.session_state:
+    st.session_state.human_review_decision = None
 
 
 data = load_dashboard_data()
@@ -179,6 +203,195 @@ elif page == "A/R":
     ar_rows = _calculate_ar_rows(claims, payments)
     ar_df = ar_table(ar_rows)
     st.dataframe(ar_df, width="stretch")
+
+elif page == "Patient RCM Workflow":
+    st.title("Patient RCM Workflow")
+    st.markdown("<div style='padding: 0.75rem; background: #fff3cd; border: 1px solid #ffe69c; border-radius: 0.5rem; color: #664d03; font-weight: 600;'>Synthetic Demo Only — Do not enter real patient information or PHI.</div>", unsafe_allow_html=True)
+    st.caption("This simulator does not submit claims, appeals, or payments. No payer communication occurs. No patient account is modified externally.")
+
+    col1, col2 = st.columns([1.2, 1.2])
+    with col1:
+        patient_form = st.form("synthetic_patient_form")
+        with patient_form:
+            st.subheader("Synthetic Patient")
+            patient_data = {
+                "patient_id": st.text_input("Patient ID", value=st.session_state.synthetic_patient.get("patient_id", "DEMO-P-101"), help="Synthetic identifier only."),
+                "name": st.text_input("Name", value=st.session_state.synthetic_patient.get("name", "Demo Patient 101"), help="Synthetic demo name only."),
+                "date_of_birth": st.date_input("Date of birth", value=_safe_decimal(st.session_state.synthetic_patient.get("date_of_birth", date.today())) if False else st.session_state.synthetic_patient.get("date_of_birth", date(1985, 6, 15)), help="Synthetic demo date only."),
+                "payer": st.text_input("Payer", value=st.session_state.synthetic_patient.get("payer", "Demo Health Plan A"), help="Synthetic payer label only."),
+                "member_id": st.text_input("Member ID", value=st.session_state.synthetic_patient.get("member_id", "DEMO-MEMBER-101"), help="Synthetic member identifier only."),
+            }
+            st.caption("Synthetic identifiers are used only in this demo. Do not enter SSN, real addresses, or PHI.")
+            st.subheader("Synthetic Claim")
+            claim_data = {
+                "claim_id": st.text_input("Claim ID", value=st.session_state.synthetic_claim.get("claim_id", "DEMO-CLM-101"), help="Synthetic claim identifier only."),
+                "patient_id": st.text_input("Patient ID (claim)", value=st.session_state.synthetic_claim.get("patient_id", patient_data["patient_id"]), help="Matches the synthetic patient record."),
+                "payer": st.text_input("Claim payer", value=st.session_state.synthetic_claim.get("payer", patient_data["payer"]), help="Synthetic payer label only."),
+                "provider_id": st.text_input("Provider ID", value=st.session_state.synthetic_claim.get("provider_id", "DEMO-PROVIDER-01")),
+                "service_date": st.date_input("Service date", value=st.session_state.synthetic_claim.get("service_date", date(2026, 2, 14))),
+                "icd_codes": st.text_input("ICD codes", value=", ".join(st.session_state.synthetic_claim.get("icd_codes", ["Z00.00"]))),
+                "cpt_codes": st.text_input("CPT codes", value=", ".join(st.session_state.synthetic_claim.get("cpt_codes", ["99213"]))),
+                "modifiers": st.text_input("Modifiers", value=", ".join(st.session_state.synthetic_claim.get("modifiers", []))),
+                "claim_amount": st.number_input("Claim amount", min_value=0.0, value=float(st.session_state.synthetic_claim.get("claim_amount", 1250.00)), step=25.0),
+                "status": st.selectbox("Status", ["PENDING", "SUBMITTED", "REVIEW", "DENIED", "PAID"], index=["PENDING", "SUBMITTED", "REVIEW", "DENIED", "PAID"].index(st.session_state.synthetic_claim.get("status", "PENDING"))),
+            }
+            with st.expander("Optional synthetic evidence"):
+                has_denial = st.checkbox("Add denial evidence", value=False)
+                has_payment = st.checkbox("Add payment evidence", value=False)
+                denial_reason = st.text_input("Denial reason", value="Eligibility denial: synthetic coverage mismatch detected.") if has_denial else ""
+                denial_amount = st.number_input("Denied amount", value=100.0, step=10.0) if has_denial else 0.0
+                payment_amount = st.number_input("Paid amount", value=850.0, step=25.0) if has_payment else 0.0
+            submitted = st.form_submit_button("Run synthetic workflow")
+            if submitted:
+                patient_payload = {
+                    "patient_id": patient_data["patient_id"],
+                    "name": patient_data["name"],
+                    "date_of_birth": patient_data["date_of_birth"],
+                    "payer": patient_data["payer"],
+                    "member_id": patient_data["member_id"],
+                }
+                claim_payload = {
+                    "claim_id": claim_data["claim_id"],
+                    "patient_id": claim_data["patient_id"],
+                    "payer": claim_data["payer"],
+                    "provider_id": claim_data["provider_id"],
+                    "service_date": claim_data["service_date"],
+                    "icd_codes": [value.strip() for value in str(claim_data["icd_codes"]).split(",") if value.strip()],
+                    "cpt_codes": [value.strip() for value in str(claim_data["cpt_codes"]).split(",") if value.strip()],
+                    "modifiers": [value.strip() for value in str(claim_data["modifiers"]).split(",") if value.strip()],
+                    "claim_amount": float(claim_data["claim_amount"]),
+                    "status": claim_data["status"],
+                }
+                denial_payload = None
+                if has_denial:
+                    denial_payload = {
+                        "denial_id": f"DEMO-DEN-{claim_payload['claim_id']}",
+                        "claim_id": claim_payload["claim_id"],
+                        "reason": denial_reason or "Eligibility denial: synthetic coverage mismatch detected.",
+                        "denied_amount": float(denial_amount),
+                        "status": "OPEN",
+                    }
+                payment_payload = None
+                if has_payment:
+                    payment_payload = {
+                        "payment_id": f"DEMO-PAY-{claim_payload['claim_id']}",
+                        "claim_id": claim_payload["claim_id"],
+                        "payer": claim_payload["payer"],
+                        "paid_amount": float(payment_amount),
+                        "status": "POSTED",
+                    }
+                result = run_patient_rcm_workflow(patient_payload, claim_payload, denial=denial_payload, payment=payment_payload)
+                st.session_state.synthetic_patient = patient_payload
+                st.session_state.synthetic_claim = claim_payload
+                st.session_state.workflow_result = result.model_dump()
+                st.session_state.human_review_decision = None
+                st.rerun()
+
+    if st.session_state.workflow_result:
+        workflow_result = st.session_state.workflow_result
+        st.subheader("Case Summary")
+        summary_columns = st.columns(5)
+        with summary_columns[0]:
+            st.metric("Patient ID", workflow_result["patient"]["patient_id"])
+        with summary_columns[1]:
+            st.metric("Claim ID", workflow_result["claim"]["claim_id"])
+        with summary_columns[2]:
+            st.metric("Payer", workflow_result["claim"]["payer"])
+        with summary_columns[3]:
+            st.metric("Claim amount", format_currency(workflow_result["claim"]["claim_amount"]))
+        with summary_columns[4]:
+            st.metric("Workflow status", workflow_result["workflow_status"])
+
+        st.markdown("**Risk score**: " + str(workflow_result["risk_score"]))
+        st.markdown("**Priority**: " + str(workflow_result["priority"]))
+        st.markdown("**Human review**: " + ("Required" if workflow_result["human_review_required"] else "Not required"))
+        st.markdown("**Next action**: " + str(workflow_result["next_action"]))
+
+        st.subheader("Workflow progress")
+        for step in workflow_result["steps"]:
+            status_label = "PASS" if step["status"] == "PASS" else step["status"]
+            st.write(f"{step['step_name']}: {status_label}")
+
+        st.subheader("Agent details")
+        agent_results = workflow_result.get("agent_results", {})
+        if "eligibility" in agent_results:
+            with st.expander("Eligibility Findings"):
+                st.json(agent_results["eligibility"])
+        if "coding" in agent_results:
+            with st.expander("Coding Findings"):
+                st.json(agent_results["coding"])
+        if "claims" in agent_results:
+            with st.expander("Claim Validation"):
+                st.json(agent_results["claims"])
+        if "denial" in agent_results:
+            with st.expander("Denial Analysis"):
+                st.json(agent_results["denial"])
+        if "payment" in agent_results:
+            with st.expander("Payment Analysis"):
+                st.json(agent_results["payment"])
+        if "ar" in agent_results:
+            with st.expander("A/R Analysis"):
+                st.json(agent_results["ar"])
+        if "billing_qa" in agent_results:
+            with st.expander("Billing QA"):
+                st.json(agent_results["billing_qa"])
+        with st.expander("Supervisor Decision"):
+            st.json(workflow_result["supervisor_result"])
+        if "appeal" in agent_results:
+            with st.expander("Appeal Readiness"):
+                st.json(agent_results["appeal"])
+
+        if workflow_result["human_review_required"]:
+            st.subheader("Human Review")
+            st.info("Demo Human Review Decision")
+            st.write(f"Reason: {workflow_result['supervisor_result'].get('reasons', ['Deterministic review requires human oversight.'])}")
+            st.write(f"Risk: {workflow_result['risk_score']}")
+            st.write(f"Priority: {workflow_result['priority']}")
+            st.write(f"Missing information: {workflow_result['supervisor_result'].get('missing_information', [])}")
+            st.write(f"Recommended next action: {workflow_result['next_action']}")
+            decision = st.radio("Demo Human Review Decision", ["APPROVE", "REJECT", "REQUEST_MORE_INFORMATION"], index=0, key="human_review_decision_radio")
+            if st.button("Submit Demo Human Review Decision"):
+                st.session_state.human_review_decision = decision
+                st.success(f"Demo decision recorded: {decision}. No external claim, appeal, or payment action was taken.")
+
+        st.subheader("Audit trace")
+        st.json(workflow_result.get("audit_trace", [])[-12:])
+
+        st.subheader("Final case summary")
+        summary_payload = {
+            "synthetic_patient": workflow_result["patient"],
+            "claim": workflow_result["claim"],
+            "agents_executed": sorted(workflow_result.get("agent_results", {}).keys()),
+            "workflow_status": workflow_result["workflow_status"],
+            "risk_score": workflow_result["risk_score"],
+            "priority": workflow_result["priority"],
+            "billing_qa": workflow_result.get("billing_qa_result", {}),
+            "human_review": workflow_result["human_review_required"],
+            "next_action": workflow_result["next_action"],
+            "warnings": workflow_result.get("warnings", []),
+        }
+        st.json(summary_payload)
+        st.download_button(
+            label="Download synthetic JSON case report",
+            data=json.dumps(summary_payload, indent=2, default=str),
+            file_name="synthetic_patient_rcm_workflow.json",
+            mime="application/json",
+        )
+
+        if st.button("Reset Demo Case"):
+            st.session_state.synthetic_patient = _default_patient()
+            st.session_state.synthetic_claim = _default_claim(st.session_state.synthetic_patient["patient_id"])
+            st.session_state.workflow_result = None
+            st.session_state.human_review_decision = None
+            st.rerun()
+    else:
+        st.info("Run the workflow to generate a synthetic patient-to-RCM case summary.")
+        if st.button("Reset Demo Case"):
+            st.session_state.synthetic_patient = _default_patient()
+            st.session_state.synthetic_claim = _default_claim(st.session_state.synthetic_patient["patient_id"])
+            st.session_state.workflow_result = None
+            st.session_state.human_review_decision = None
+            st.rerun()
 
 elif page == "Demo Scenarios":
     st.title("End-to-End Demo Scenarios")

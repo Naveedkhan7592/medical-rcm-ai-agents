@@ -15,5 +15,6 @@ Capture only synthetic demo data and save reviewed images in this directory usin
 - `human-review.png`
 - `demo-scenarios.png`
 - `agent-evaluation.png`
+- `patient-rcm-workflow.png`
 
 Before committing a screenshot, verify that it contains no PHI, credentials, local paths, or unreviewed browser information. Add README image references only after the corresponding real screenshots exist.
